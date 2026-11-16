@@ -1,6 +1,17 @@
 import datetime as dt
+import json
 transactions = []
-id_counter = 1
+id_counter = max((transactions["id"]
+                 for transaction in transactions), default=0)+1
+
+
+def load_transactions():
+    try:
+        with open("transaction.json", "r") as file:
+            transactions = json.load(file)
+            return transactions
+    except FileNotFoundError:
+        return []
 
 
 def input_transaction(transactions):
@@ -43,10 +54,10 @@ def input_transaction(transactions):
 
         except ValueError:
             print("Please Enter Valid Category.")
-
+    string_date = input_date.strftime("%d/%m/%Y")
     transaction = {
         "id": id_counter,
-        "date": input_date,
+        "date": string_date,
         "type": input_type,
         "amount": input_amount,
         "description": input_description,
@@ -54,6 +65,8 @@ def input_transaction(transactions):
 
     }
     transactions.append(transaction)
+    with open("transaction.json", "w") as file:
+        json.dump(transactions, file, indent=4)
     id_counter += 1
 
 
@@ -80,7 +93,7 @@ def display_transactions(transactions):
         print("Transactions: ")
         for transaction in transactions:
             print(
-                f" id: {transaction['id']} \nDate: {transaction['date'].strftime('%d/%m/%y')}\n Type: {transaction['type']}\nAmount: {transaction['amount']}\nDescription: {transaction['description']} \nCategory: {transaction['category']}\n")
+                f" id: {transaction['id']} \nDate: {transaction['date']}\n Type: {transaction['type']}\nAmount: {transaction['amount']}\nDescription: {transaction['description']} \nCategory: {transaction['category']}\n")
 
 
 def delete_transactions(transactions, input_id):
@@ -116,7 +129,7 @@ def update_transaction(transactions, id):
                     "Invalid date format. Please enter date in DD/MM/YYYY format. ")
 
                 return
-            transaction['date'] = input_date
+            transaction['date'] = input_date.strftime("%d/%m/%Y")
             input_type = input(
                 "Enter the type of transaction (income/expense): ").lower()
 
@@ -171,7 +184,7 @@ def get_transaction_id():
                 continue
         except ValueError:
             print("Please Enter Numeric Value Only. ")
-            break
+            continue
         return input_id
 
 
@@ -192,6 +205,7 @@ expense_categories = [
     "Bills",
     "Other"
 ]
+transactions = load_transactions()
 print("Welcome to the Transaction Trackr!")
 while True:
     print("Enter your choice: ")
